@@ -226,7 +226,7 @@ let query = (collectionName, query) => {
       port: 587,
       auth: {
         user: "kuattechnologies@gmail.com",
-        pass: "KuatTech@2021"
+        pass: "Kuat@2021"
       }
     });
     
