@@ -2,10 +2,11 @@
 const admin = require("./APIs/admin")
 const students = require("./APIs/students")
 const faculty = require("./APIs/faculty")
-const website = require("./APIs/website")
+const website = require("./APIs/website");
 const {ObjectId} = require('mongodb');  
 const  Razorpay = require('razorpay');
 const  shortID = require('shortid');
+const mongodb = require("./Utils/dao");
 
 var razorpay = new Razorpay({
   key_id: 'rzp_test_QbsFmZSnoGXvpF',
@@ -352,6 +353,54 @@ module.exports = function(app) {
       data:response
     }
     res.send(result);
+  })
+
+  app.post("/v1/api/webapp/incrementinvoice", function (req, res){
+    let collectionName = req.body.collectionName;
+    console.log(collectionName)
+    mongodb.query(collectionName,{}).then(async (result) => {
+      if(result.length > 0)
+      {
+        let invoiceNo = {
+          invoiceno:Number(result[0].no)+1
+        };
+        mongodb.incrementinvoice(collectionName, result[0]._id, invoiceNo).then(async (result1) => {
+          res.send({
+            status: 200,
+            invoiceNumber:Number(result[0].no)+1,
+            data:
+              "Invoice Number incremented successfully",
+          });
+          return;
+        }, async (error) => {
+          res
+          .status(500)
+          .send({
+            data: error.msg,
+            error: error.err,
+          });
+        });
+      }
+    }, async (error) => {
+      res
+      .status(500)
+      .send(error);
+    });
+  }),
+  app.post("/v1/api/webapp/resetinvoice", function (req, res){
+    let collectionName = req.body.collectionName;
+    let data = {invoiceno:req.body.data};
+    console.log(collectionName)
+    console.log(data)
+
+    mongodb.updateInvoice(collectionName,data).then(async (result) => {
+      res.status(200).send(result);
+      return;
+    }, async (error) => {
+      res
+      .status(500)
+      .send(error);
+    });
   })
 }
 

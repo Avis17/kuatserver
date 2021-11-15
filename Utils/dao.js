@@ -61,11 +61,37 @@ let deleteItem = (collectionName, query) => {
   });
 };
 
+let incrementinvoice = (collectionName, query, udpateData) => {
+  return new Promise((resolve, reject) => {
+    let collection = db.collection(collectionName);
+    // console.log("coming");
+    collection.updateOne({"_id":new ObjectId(query)}, {$set:udpateData}, (err, result) => {
+      // console.log(err, result);
+      if (err) return reject(err);
+      return resolve(result);
+    });
+  });
+};
+
+let updateInvoice = (collectionName, udpateData) => {
+  return new Promise((resolve, reject) => {
+    let collection = db.collection(collectionName);
+    // console.log("coming");
+    collection.updateOne({name:'invoice'}, {$set:udpateData}, (err, result) => {
+      // console.log(err, result);
+      if (err) return reject(err);
+      return resolve(result);
+    });
+  });
+};
+
 module.exports = {
   connect,
   query,
   insert,
   update,
   deleteItem,
+  updateInvoice,
+  incrementinvoice,
   ObjectId,
 };
