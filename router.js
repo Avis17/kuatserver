@@ -392,7 +392,6 @@ module.exports = function(app) {
     let data = {invoiceno:req.body.data};
     console.log(collectionName)
     console.log(data)
-
     mongodb.updateInvoice(collectionName,data).then(async (result) => {
       res.status(200).send(result);
       return;
@@ -400,6 +399,98 @@ module.exports = function(app) {
       res
       .status(500)
       .send(error);
+    });
+  })
+
+  app.post("/v1/api/webapp/checkpassword", function (req, res){
+    let collectionName = req.body.collectionName;
+    let query = {username:req.body.username};
+    let password = req.body.password;
+    mongodb.query(collectionName,query).then(async (result) => {
+      let status_code = 0
+      if(result[0].amount_password == password)
+      {
+        status_code = 200
+      }else{
+        status_code = 404
+      }
+      res.send({
+        status: 200,
+        code:status_code,
+      });
+      return;
+    }, async (error) => {
+      res
+      .status(500)
+      .send({
+        data: error.msg,
+        error: error.err,
+      });
+    });
+  })
+
+  app.post("/v1/api/webapp/totalAmountEarned", function (req, res){
+    let collectionName = req.body.collectionName;
+    let query = {username:req.body.username};
+    mongodb.query(collectionName,query).then(async (result) => {
+     let totalAmount = 0
+      if(result[0])
+      {
+        totalAmount = Number(result[0].totalAmountEarned)
+      }
+      res.send({
+        status: 200,
+        data:totalAmount,
+      });
+      return;
+    }, async (error) => {
+      res
+      .status(500)
+      .send({
+        data: error.msg,
+        error: error.err,
+      });
+    });
+  })
+
+  app.post("/v1/api/webapp/updateTotalAmount", function (req, res){
+    let collectionName = req.body.collectionName;
+    let query = {username:req.body.username};
+    let amount = req.body.amount;
+    let action = req.body.action;
+    mongodb.query(collectionName,query).then(async (result) => {
+     let totalAmount = 0
+      if(result[0])
+      {
+        if(action == 'add')
+        {
+          totalAmount = Number(result[0].totalAmountEarned) + Number(amount);
+        }else{
+          totalAmount = Number(result[0].totalAmountEarned) - Number(amount);
+        }
+        result[0].totalAmountEarned = totalAmount;
+        website.update(collectionName,query,result[0]).then(async (result11) => {
+          res.send(result11);
+          return;
+        }, async (error11) => {
+          res
+          .status(500)
+          .send(error11);
+          return;
+        });
+      }
+      res.send({
+        status: 500,
+        data:'updation failed',
+      });
+      return;
+    }, async (error) => {
+      res
+      .status(500)
+      .send({
+        data: error.msg,
+        error: error.err,
+      });
     });
   })
 }
